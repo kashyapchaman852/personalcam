@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Training</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #cameraFeed {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #000;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #errorMessage {
+            color: #d32f2f;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            max-width: 600px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Camera Access Demo</h1>
+    
+    <video id="cameraFeed" autoplay playsinline></video>
+    
+    <div class="controls">
+        <button id="startCamera">Start Camera</button>
+        <button id="stopCamera">Stop Camera</button>
+    </div>
+    
+    <div id="errorMessage"></div>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>1. Click "Start Camera" to begin using your camera</p>
+        <p>2. Allow camera access when prompted by your browser</p>
+        <p>3. Click "Stop Camera" to turn off the camera feed</p>
+    </div>
+
+    <script>
+        // Get elements
+        const video = document.getElementById('cameraFeed');
+        const startButton = document.getElementById('startCamera');
+        const stopButton = document.getElementById('stopCamera');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        let stream = null;
+        
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                // Request camera access
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                // Set the video source to the camera stream
+                video.srcObject = stream;
+                errorMessage.textContent = '';
+                
+                // Enable the stop button
+                stopButton.disabled = false;
+                startButton.disabled = true;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                errorMessage.textContent = `Error: ${err.message}. Please make sure you have a camera connected and have granted permission to access it.`;
+            }
+        }
+        
+        // Function to stop the camera
+        function stopCamera() {
+            if (stream) {
+                // Stop all tracks in the stream
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                
+                // Enable the start button
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        }
+        
+        // Add event listeners
+        startButton.addEventListener('click', startCamera);
+        stopButton.addEventListener('click', stopCamera);
+        
+        // Initially disable the stop button
+        stopButton.disabled = true;
+    </script>
+</body>
+</html>
